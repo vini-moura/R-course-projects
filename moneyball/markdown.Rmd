@@ -1,0 +1,69 @@
+---
+title: "Moneyball Solutions"
+author: "Vinícius Oliveira"
+date: "07/01/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Moneyball Solution
+
+Although the Moneyball project is old and has many answers, this publish brings my first attempt to solve a project with no code replication from others. 
+
+This project has come to me from a course on data science, and the data processing was required by it. Therefore, all the codes until the first comment are the steps to allows a result, asked by this course. However, the solution itself is mine, developed with my knowledge on R. 
+
+By saying this, I want to make it clear that probably this answer is not new or unique. It's just the way I came to this, studying dplyr package and pipe operators and may be similar to others.
+
+```{Moneyball solution}
+rm(list = ls(all=T))
+
+library('ggplot2')
+library('dplyr')
+
+battings <- read.csv('~/Documentos/Projetos/moneyball/Batting.csv')
+salaries <- read.csv('~/Documentos/Projetos/moneyball/Salaries.csv')
+head(battings)
+head(salaries)
+
+attach(battings)
+
+str(battings)
+str(salaries)
+
+battings$BA <- H/AB
+battings$OBP <- (H + BB + HBP) / (AB + BB + HBP + SF)
+battings$X1B <- H - X2B - X3B - HR
+battings$SLG <- (X1B + 2*X2B + 3*X3B + 4*HR) / AB
+head(battings$SLG)
+summary(battings)
+
+bat_01 <- subset(battings, yearID == 2001)
+sal_01 <- subset(salaries, yearID == 2001)
+
+complete <- merge(bat_01, sal_01)
+summary(complete)
+
+lost_players <- subset(complete, playerID %in% c('giambja01','damonjo01','saenzol01')) %>%
+                select('playerID','H','X2B','X3B','HR','OBP','SLG','BA','AB','yearID')
+summary(lost_players)
+sum(lost_players$AB)
+
+#conditions to select players:
+# new_players$salaries <= 15000000
+# sum(new_players$AB) >= 1469
+# mean(new_players$OBP) >= 0.3639
+
+new_players <- complete %>%
+                select(playerID, salary, AB, OBP) %>%
+                filter(salary <= 15000000 & AB >= 500 & OBP >= 0.3639)%>%
+                sample_n(size = 3)
+
+attach(new_players)
+new_players
+sum(salary)
+is.logical(salary %in% sum() <= 15000000)
+summary(new_players)
+```
